@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Text Game — Guerra do Paraguai (1864–1870)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --purple:#673ab7;
+  --purple-dark:#512da8;
+  --purple-light:#f3e9ff;
+  --border:#dadce0;
+  --text:#202124;
+  --grey:#5f6368;
+  --bg:#f0ebf8;
+  --card:#ffffff;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+body{
+  margin:0;
+  font-family:'Roboto',Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.topbar{
+  width:100%;
+  background:var(--purple);
+  color:#fff;
+  padding:18px 20px calc(18px + env(safe-area-inset-top,0px));
+  padding-top:calc(18px + env(safe-area-inset-top,0px));
+}
+.topbar h1{margin:0;font-size:1.15rem;font-weight:500;}
+.topbar p{margin:4px 0 0;font-size:.85rem;opacity:.85;}
+.progress-track{width:100%;height:4px;background:rgba(255,255,255,.35);}
+.progress-fill{height:4px;background:#ffd54f;transition:width .35s ease;}
+.wrap{
+  width:100%;
+  max-width:640px;
+  padding:24px 16px 60px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:24px 24px 20px;
+  border-top:10px solid var(--purple);
+  overflow-x:auto;
+}
+.tags{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+.tag{
+  font-size:.7rem;
+  background:var(--purple-light);
+  color:var(--purple-dark);
+  padding:3px 8px;
+  border-radius:12px;
+}
+.step-title{font-size:1.25rem;font-weight:500;margin:0 0 14px;}
+.narrative{
+  background:#faf8fd;
+  border-left:3px solid var(--purple);
+  padding:12px 14px;
+  font-size:.95rem;
+  color:#3c3c3c;
+  margin:0 0 18px;
+  line-height:1.5;
+}
+.question{font-size:1rem;font-weight:500;margin:0 0 14px;}
+.option{
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:12px 14px;
+  margin-bottom:10px;
+  cursor:pointer;
+  font-size:.95rem;
+  line-height:1.45;
+  transition:border-color .15s, background .15s;
+}
+.option:hover{background:#f8f6fc;}
+.option.selected{border-color:var(--purple);background:var(--purple-light);}
+.option .dot{
+  width:18px;height:18px;min-width:18px;
+  border-radius:50%;
+  border:2px solid var(--grey);
+  margin-top:2px;
+  position:relative;
+}
+.option.selected .dot{border-color:var(--purple);}
+.option.selected .dot::after{
+  content:"";
+  position:absolute;top:3px;left:3px;width:8px;height:8px;
+  border-radius:50%;background:var(--purple);
+}
+.consequence{
+  background:#fff8e1;
+  border-left:3px solid #ffb300;
+  padding:12px 14px;
+  font-size:.9rem;
+  margin-top:4px;
+  line-height:1.5;
+}
+.consequence b{color:#8a6d00;}
+.actions{display:flex;justify-content:flex-end;margin-top:18px;gap:10px;}
+button.next{
+  background:var(--purple);
+  color:#fff;
+  border:none;
+  padding:10px 26px;
+  border-radius:4px;
+  font-size:.95rem;
+  font-weight:500;
+  cursor:pointer;
+}
+button.next:disabled{background:#c9bfe0;cursor:not-allowed;}
+button.next:hover:not(:disabled){background:var(--purple-dark);}
+label.reflection{display:block;font-size:.95rem;font-weight:500;margin:16px 0 6px;}
+textarea{
+  width:100%;
+  border:none;
+  border-bottom:1px solid var(--border);
+  font-family:inherit;
+  font-size:.95rem;
+  padding:6px 2px;
+  resize:vertical;
+  min-height:44px;
+}
+textarea:focus{outline:none;border-bottom:2px solid var(--purple);}
+.done{
+  text-align:center;
+  padding:40px 20px;
+}
+.done .check{
+  width:56px;height:56px;border-radius:50%;
+  background:#34a853;color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.8rem;margin:0 auto 16px;
+}
+.done h2{margin:0 0 8px;font-weight:500;}
+.done p{color:var(--grey);margin:0 0 24px;}
+.restart{
+  background:none;border:1px solid var(--purple);color:var(--purple);
+  padding:9px 20px;border-radius:4px;font-size:.9rem;cursor:pointer;
+}
+.restart:hover{background:var(--purple-light);}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131314;--card:#1e1e1f;--border:#3c3c3d;--text:#e8e6e9;--grey:#a8a8a8;
+    --purple-light:#2a2140;
+  }
+  body{background:var(--bg);color:var(--text);}
+  .narrative{background:#25202b;color:#d8d5db;}
+  .consequence{background:#2a230d;}
+  textarea{background:transparent;color:var(--text);}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>Text Game — Guerra do Paraguai (1864–1870)</h1>
+  <p>História — 2º Ano · Prof. Lucas Flor</p>
+</div>
+<div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+<div class="wrap"><div class="card" id="card"></div></div>
+
+<script>
+const DATA = {
+  start: {
+    tags: [],
+    title: "Boas-vindas",
+    narrative: `Boas-vindas ao Text Game sobre a Guerra do Paraguai! Aqui, você poderá responder vários "E se?" da história, mudando rumos de forma mínima até radical. Mas antes — decida qual papel irá assumir.`,
+    question: "Qual papel você deseja assumir nesta história?",
+    options: [
+      { text: "Imperador (Dom Pedro II)", next: "2-IMP" },
+      { text: "Soldado", next: "2-SOL" },
+      { text: "Cidadão", next: "2-CID" }
+    ],
+    routeOnly: true
+  },
+
+  "2-IMP": { tags:["RP","IN"], title:"A crise de 1864",
+    narrative:`Final de 1864. Tropas paraguaias já ocupam parte de Mato Grosso, depois da apreensão do vapor Marquês de Olinda em novembro. No Uruguai, o Brasil apoia o levante de Venâncio Flores contra o presidente Atanasio Aguirre, aliado de Solano López. Seus conselheiros aguardam uma decisão.`,
+    question:"Como Vossa Majestade responde à crise?",
+    options:[
+      {text:"A) Reafirmar o apoio a Flores no Uruguai e mobilizar a Guarda Nacional e os Voluntários da Pátria.", consequence:"Foi exatamente o que o governo imperial fez. A intervenção no Uruguai, somada à invasão de Mato Grosso, tornou o confronto praticamente inevitável.", next:"3-IMP"},
+      {text:"B) Suspender o apoio a Flores e tentar negociar diretamente com López.", consequence:"Isso não ocorreu na história real. Um recuo brasileiro provavelmente tiraria de López o pretexto para atacar Mato Grosso, mas obrigaria o Império a aceitar um governo uruguaio hostil na fronteira sul.", next:"3-IMP"}
+    ]},
+  "3-IMP": { tags:["IN","RP"], title:"A Tríplice Aliança",
+    narrative:`Abril de 1865. Tropas paraguaias invadem a província argentina de Corrientes, depois que Buenos Aires recusa passagem para um ataque ao Rio Grande do Sul. A Argentina, até então neutra, pode se tornar aliada do Brasil.`,
+    question:"Vossa Majestade aceita formar uma aliança militar formal com Argentina e o governo uruguaio de Flores?",
+    options:[
+      {text:"A) Assinar o Tratado da Tríplice Aliança, comprometendo-se a lutar até a queda de López.", consequence:"Em 1º de maio de 1865 o tratado foi assinado em Buenos Aires, com cláusulas secretas sobre a partilha de territórios paraguaios após a vitória.", next:"4-IMP"},
+      {text:"B) Buscar apenas cooperação informal, sem tratado assinado.", consequence:"Sem tratado, faltaria uma base jurídica para dividir o comando e o financiamento da guerra entre os três países, o que provavelmente atrasaria a ofensiva conjunta.", next:"4-IMP"}
+    ]},
+  "4-IMP": { tags:["RP","IN"], title:"Riachuelo e o comando da guerra",
+    narrative:`Em 11 de junho de 1865, o almirante Barroso vence a esquadra paraguaia na Batalha do Riachuelo, garantindo o controle brasileiro dos rios. Em terra, porém, o comando aliado (do argentino Mitre) avança devagar.`,
+    question:"Vossa Majestade mantém o comando geral aliado com Mitre, ou reforça o comando próprio do Brasil desde já?",
+    options:[
+      {text:"A) Manter Mitre como comandante-em-chefe aliado.", consequence:"Foi o que ocorreu até 1866, quando o desgaste de Curupaiti levaria Mitre a deixar o comando direto das operações.", next:"5-IMP"},
+      {text:"B) Nomear já o Marquês de Caxias como comandante das forças brasileiras.", consequence:"Na história real, Caxias só assumiu esse posto em outubro de 1866. Se tivesse assumido antes, a ofensiva provavelmente teria sido mais cautelosa, já que Caxias evitava ataques frontais precipitados.", next:"5-IMP"}
+    ]},
+  "5-IMP": { tags:["RP","PR"], title:"Curupaiti e a proposta de paz",
+    narrative:`Setembro de 1866. Antes de um ataque frontal às fortificações de Curupaiti, López propõe uma conferência de paz em Yataity Corã.`,
+    question:"Vossa Majestade aceita negociar a paz mesmo que López continue no poder?",
+    options:[
+      {text:"A) Recusar qualquer acordo que mantenha López, conforme exige o tratado da Tríplice Aliança.", consequence:"Foi a posição real do governo imperial. As negociações fracassaram e, em 22 de setembro, o ataque a Curupaiti causou mais de 4 mil baixas aliadas, quase todas brasileiras, sem sucesso militar.", next:"6-IMP"},
+      {text:"B) Aceitar negociar com López ainda no poder.", consequence:"Essa opção nunca foi seriamente considerada — o tratado obrigava as três nações a lutar até a queda de López, e aceitar isso romperia a aliança.", next:"6-IMP"}
+    ]},
+  "6-IMP": { tags:["IN","RE"], title:"A passagem de Humaitá",
+    narrative:`1867–1868. O cerco à fortaleza de Humaitá, chamada por contemporâneos de "Sebastopol americana", se arrasta. Uma epidemia de cólera mata mais soldados que os combates. O almirante Inhaúma propõe passar a esquadra sob o fogo dos canhões da fortaleza, de noite.`,
+    question:"Vossa Majestade autoriza a passagem da esquadra por Humaitá?",
+    options:[
+      {text:"A) Autorizar a manobra.", consequence:"Autorizada, a passagem ocorreu em 19 de fevereiro de 1868. A esquadra atravessou sob fogo pesado e isolou Humaitá, que caiu em agosto do mesmo ano.", next:"7-IMP"},
+      {text:"B) Manter apenas o cerco terrestre prolongado.", consequence:"Isso significaria meses a mais de cerco, com mais mortes por cólera e fome — a doença já matava mais que as batalhas nessa fase da guerra.", next:"7-IMP"}
+    ]},
+  "7-IMP": { tags:["RP","PR"], title:"A perseguição final",
+    narrative:`Janeiro de 1869. Assunção é ocupada pelas tropas aliadas. López foge para o interior com o que resta de suas forças, cada vez mais formadas por adolescentes e homens idosos.`,
+    question:"Vossa Majestade encerra as operações após a queda da capital, ou ordena a perseguição de López até sua captura ou morte?",
+    options:[
+      {text:"A) Ordenar a perseguição até o fim, sob novo comando.", consequence:"Foi o que ocorreu. Caxias, que defendia encerrar a guerra em Assunção, foi substituído pelo Conde d'Eu, genro do imperador, que conduziu a perseguição até a morte de López em Cerro Corá, em 1º de março de 1870 — episódio que incluiu a Batalha de Acosta Ñu, em agosto de 1869, na qual muitos combatentes paraguaios eram crianças.", next:"8-IMP"},
+      {text:"B) Declarar vitória em Assunção e retirar a maior parte das tropas.", consequence:"López ficaria livre para se reorganizar no interior, prolongando um conflito de baixa intensidade e deixando em aberto quem governaria o Paraguai depois da guerra.", next:"8-IMP"}
+    ]},
+  "8-IMP": { final:true, title:"Conclusão e reflexão — Imperador",
+    narrative:`A guerra termina oficialmente em 1870, após quase seis anos. O Brasil sai vitorioso, mas endividado com bancos britânicos, e o Exército, fortalecido e politizado pela experiência da guerra, passa a pesar cada vez mais nas decisões do Império — inclusive na crise que levaria à Proclamação da República, em 1889.`,
+    reflection:[
+      "Que traço de patrimonialismo ou de liderança pessoal do imperador apareceu nas decisões que você tomou?",
+      "Como a guerra fortaleceu uma instituição, o Exército, que décadas depois ajudaria a derrubar o próprio regime que a comandou?",
+      "Que semelhanças você vê entre as relações de poder da guerra e as disputas políticas do Brasil atual?"
+    ]},
+
+  "2-SOL": { tags:["PS","IN"], title:"O alistamento",
+    narrative:`Início de 1865. O Império precisa de homens para a guerra. Nem todos chegam à fileira da mesma forma.`,
+    question:"Como você se torna soldado?",
+    options:[
+      {text:"A) Alistar-se como Voluntário da Pátria, atraído pelo prêmio em dinheiro e pela promessa de terras.", consequence:"Milhares de homens livres pobres se alistaram assim entre 1865 e 1866, muitos sob forte pressão social e policial para se apresentar.", next:"3-SOL"},
+      {text:"B) Ser recrutado à força pela Guarda Nacional, enquanto homens de posses pagam substitutos para escapar.", consequence:"Esse foi o destino da maioria dos soldados pobres. A lei permitia que famílias abastadas comprassem isenção, tornando o recrutamento profundamente desigual.", next:"3-SOL"},
+      {text:"C) Ser enviado por seu senhor, como pessoa escravizada, em troca da promessa de alforria ao fim do serviço.", consequence:"O Estado indenizava senhores que cedessem escravos para a guerra, prometendo a liberdade ao cativo depois. Muitos só receberam a alforria formal anos depois, e alguns nunca a receberam.", next:"3-SOL"}
+    ]},
+  "3-SOL": { tags:["RE","PR"], title:"Riachuelo e o front",
+    narrative:`Depois da vitória naval de Riachuelo, em junho de 1865, as tropas terrestres avançam devagar rumo ao território paraguaio, atravessando o rio Paraná em Passo da Pátria, já em 1866.`,
+    question:"Na travessia, você...",
+    options:[
+      {text:"A) Avança na linha de frente, entre os primeiros a desembarcar em solo paraguaio.", consequence:"A travessia de Passo da Pátria, em abril de 1866, expôs as primeiras tropas a doenças tropicais e emboscadas antes mesmo do primeiro grande combate.", next:"4-SOL"},
+      {text:"B) Permanece na retaguarda, cuidando do transporte de munição e mantimentos.", consequence:"A logística da campanha dependia de milhares de homens fora do combate direto — muitos morreram de cólera e disenteria nos acampamentos de apoio.", next:"4-SOL"}
+    ]},
+  "4-SOL": { tags:["PR","RP"], title:"Tuiuti",
+    narrative:`24 de maio de 1866. O exército paraguaio ataca de surpresa as posições aliadas em Tuiuti, a maior batalha campal já travada na América do Sul.`,
+    question:"Diante do ataque, você...",
+    options:[
+      {text:"A) Mantém posição na linha de frente, sob ordem de resistir a qualquer custo.", consequence:"A resistência aliada em Tuiuti causou dezenas de milhares de baixas somadas dos dois lados em um único dia, mas terminou em vitória aliada.", next:"5-SOL"},
+      {text:"B) Recua taticamente para se reagrupar com uma reserva próxima.", consequence:"Recuos não autorizados eram tratados como deserção, com pena severa — um recuo tático arriscava a vida do soldado tanto quanto o próprio combate.", next:"5-SOL"}
+    ]},
+  "5-SOL": { tags:["RP","PS"], title:"Curupaiti",
+    narrative:`Setembro de 1866. Depois do fracasso das negociações de paz em Yataity Corã, o comando aliado ordena um assalto frontal às fortificações de Curupaiti.`,
+    question:"Recebida a ordem de ataque, você...",
+    options:[
+      {text:"A) Segue a ordem e avança contra as trincheiras paraguaias.", consequence:"O ataque de 22 de setembro de 1866 terminou em desastre — mais de 4 mil soldados aliados morreram ou ficaram feridos em poucas horas, sem tomar uma só posição inimiga.", next:"6-SOL"},
+      {text:"B) Hesita e atrasa deliberadamente o avanço do seu pelotão.", consequence:"Desobedecer ordem direta em combate era crime grave, sujeito a corte marcial. Ainda assim, o desastre de Curupaiti gerou tantas críticas que episódios de hesitação em tropas mal preparadas passaram a ser mencionados nos relatórios da época.", next:"6-SOL"}
+    ]},
+  "6-SOL": { tags:["RE","IN"], title:"O cerco de Humaitá",
+    narrative:`1867–1868. O cerco à fortaleza de Humaitá se arrasta por mais de um ano. Uma epidemia de cólera mata mais soldados, nos dois exércitos, do que qualquer batalha da guerra.`,
+    question:"Durante o cerco, você...",
+    options:[
+      {text:"A) Permanece nas trincheiras de terra, entre doenças, calor e escassez de água potável.", consequence:"As condições sanitárias eram tão precárias que soldados descreviam a cólera como um inimigo pior que os paraguaios.", next:"7-SOL"},
+      {text:"B) É escalado para a tripulação de um dos navios que tentará passar sob fogo pelas fortificações.", consequence:"A passagem de Humaitá, em 19 de fevereiro de 1868, foi arriscada, mas decisiva — isolou a fortaleza, que caiu em agosto daquele ano.", next:"7-SOL"}
+    ]},
+  "7-SOL": { tags:["PR","RP"], title:"A perseguição final",
+    narrative:`Início de 1869. Com Assunção ocupada, o exército paraguaio, já quase destruído, recorre a adolescentes e homens idosos para continuar resistindo no interior, sob comando pessoal de López.`,
+    question:"Nesta fase final, você...",
+    options:[
+      {text:"A) Segue com a coluna de perseguição, sob o comando do Conde d'Eu, rumo ao interior do Paraguai.", consequence:"A perseguição levou tropas brasileiras à Batalha de Acosta Ñu, em agosto de 1869, onde muitos combatentes paraguaios eram meninos, e por fim ao combate de Cerro Corá, em 1º de março de 1870, quando López morreu.", next:"8-SOL"},
+      {text:"B) Permanece guarnecendo o território já conquistado, entre Assunção e as fortalezas tomadas.", consequence:"Grande parte das tropas aliadas não participou da perseguição final — ficou responsável pela ocupação, o que trazia menos risco de morte em combate, mas expunha os soldados a doenças em acampamentos fixos por mais tempo.", next:"8-SOL"}
+    ]},
+  "8-SOL": { final:true, title:"Conclusão e reflexão — Soldado",
+    narrative:`A guerra termina em 1870. Se sobreviveu, você retorna a um país que raramente cumpriu as promessas feitas aos veteranos — terras, pensões e, no caso dos ex-escravizados, muitas vezes a própria alforria atrasaram ou nunca chegaram por completo. Ainda assim, a experiência de homens livres pobres e escravizados lutando lado a lado alimentou, nos anos seguintes, o debate sobre a abolição da escravidão.`,
+    reflection:[
+      "Que relação de poder entre ricos e pobres ficou evidente na forma como você foi recrutado?",
+      "Como a participação de homens escravizados na guerra se conecta ao processo de abolição que viria anos depois?",
+      "Que semelhanças você vê entre o tratamento dado aos veteranos da guerra e o tratamento dado hoje a quem serve o Estado em situações de risco?"
+    ]},
+
+  "2-CID": { tags:["RE","PS"], title:"A fronteira em guerra",
+    narrative:`1865. Você vive em uma pequena propriedade rural no Rio Grande do Sul, perto da fronteira em conflito. Uma comissão de recrutamento passa pela região em busca de homens para os Voluntários da Pátria.`,
+    question:"Ao saber que seu filho mais velho pode ser recrutado, você...",
+    options:[
+      {text:"A) Esconde o filho até a comissão deixar a região.", consequence:"Esconder um filho do recrutamento era comum entre famílias pobres, mas arriscado — ser descoberto podia significar prisão do responsável e recrutamento forçado do jovem de qualquer forma.", next:"3-CID"},
+      {text:"B) Apresenta o filho como voluntário, em troca do prêmio em dinheiro oferecido pelo governo.", consequence:"O prêmio e a promessa de terras atraíam famílias pobres, mas raramente compensavam o risco — a maior parte dos soldados morria de doença, não em combate.", next:"3-CID"}
+    ]},
+  "3-CID": { tags:["IN","RP"], title:"A requisição de gado",
+    narrative:`1866. As autoridades imperiais requisitam gado e mantimentos das propriedades da região para abastecer a campanha militar, prática comum durante toda a guerra.`,
+    question:"Diante da requisição, você...",
+    options:[
+      {text:"A) Entrega parte do gado exigido, mesmo com prejuízo para a família.", consequence:"A economia de guerra dependia dessas requisições, que pesavam sobretudo sobre pequenos produtores — os grandes fazendeiros tinham mais poder para negociar compensações.", next:"4-CID"},
+      {text:"B) Recusa-se a entregar o gado e esconde parte do rebanho.", consequence:"Recusar uma requisição oficial em tempo de guerra podia resultar em confisco total do rebanho e até prisão, dependendo da autoridade local encarregada da coleta.", next:"4-CID"}
+    ]},
+  "4-CID": { tags:["PR","PS"], title:"Notícias de Tuiuti",
+    narrative:`Junho de 1866. Chegam notícias da batalha de Tuiuti e do número imenso de mortos e feridos. Comitês de senhoras começam a se organizar nas cidades para apoiar o esforço de guerra.`,
+    question:"Você decide...",
+    options:[
+      {text:"A) Continuar apenas na lida da propriedade, sustentando a produção agrícola exigida pela guerra.", consequence:"A produção de alimentos e couro nas propriedades rurais era tão essencial ao esforço de guerra quanto o combate, embora raramente fosse reconhecida dessa forma pela história oficial.", next:"5-CID"},
+      {text:"B) Se voluntariar para trabalhar como cantineira, cozinhando e cuidando de feridos junto às tropas.", consequence:"Mulheres que serviam como cantineiras enfrentavam as mesmas doenças e privações dos soldados, com pouquíssimo reconhecimento oficial ou remuneração.", next:"5-CID"}
+    ]},
+  "5-CID": { tags:["RE","IN"], title:"A cólera",
+    narrative:`1867. Uma epidemia de cólera, vinda dos acampamentos militares, chega às cidades e vilas por onde passam soldados feridos e doentes.`,
+    question:"Diante do risco de contágio, você...",
+    options:[
+      {text:"A) Ajuda a cuidar dos doentes que retornam da guerra, apesar do risco.", consequence:"A cólera de 1867-1868 matou mais pessoas, entre soldados e civis, do que qualquer batalha isolada da guerra; quem cuidava dos doentes corria risco real.", next:"6-CID"},
+      {text:"B) Mantém distância, isolando a própria família dos que retornam do front.", consequence:"O isolamento reduzia o risco de contágio, mas deixava soldados doentes sem qualquer assistência ao chegar às vilas.", next:"6-CID"}
+    ]},
+  "6-CID": { tags:["IN","PR"], title:"A campanha de donativos",
+    narrative:`1868. Comitês patrióticos organizam campanhas de arrecadação de roupas, dinheiro e mantimentos para sustentar o cerco prolongado a Humaitá.`,
+    question:"Você...",
+    options:[
+      {text:"A) Contribui com parte das reservas da família para a campanha.", consequence:"Essas campanhas, lideradas sobretudo por mulheres da elite urbana, ajudaram a sustentar financeiramente uma guerra que já se arrastava havia quatro anos, mas o peso real recaía sobre quem produzia os recursos no campo.", next:"7-CID"},
+      {text:"B) Mantém tudo para a própria família, diante da escassez que também atinge a região.", consequence:"A escassez de mão de obra masculina, já que a maior parte dos homens estava na guerra, reduzia havia anos a produção agrícola das famílias pobres, tornando qualquer doação um sacrifício real.", next:"7-CID"}
+    ]},
+  "7-CID": { tags:["PS","PR"], title:"A espera pelo fim",
+    narrative:`1869. Assunção já foi ocupada, mas a guerra continua no interior do Paraguai, na perseguição a López. Notícias do front chegam cada vez mais devagar.`,
+    question:"Você...",
+    options:[
+      {text:"A) Continua esperando notícias do filho ou parente que foi lutar, sem saber se ainda está vivo.", consequence:"Muitas famílias só souberam do destino de seus parentes meses depois do fim da guerra, em 1870 — outras nunca receberam confirmação oficial.", next:"8-CID"},
+      {text:"B) Já recebeu a notícia de que o parente morreu em combate ou de doença durante a campanha.", consequence:"A maioria das mortes na Guerra do Paraguai foi causada por doença, não por combate direto, um dado frequentemente esquecido nas narrativas mais heroicas sobre a guerra.", next:"8-CID"}
+    ]},
+  "8-CID": { final:true, title:"Conclusão e reflexão — Cidadão",
+    narrative:`A guerra termina em 1870, mas o esforço de guerra deixa marcas duradouras: dívidas do Estado com bancos britânicos, terras e gados requisitados, famílias que perderam seus homens para a batalha e, principalmente, para a doença. Nas décadas seguintes, o país discutirá cada vez mais abertamente o fim da escravidão, em parte por causa da experiência da guerra, em que homens escravizados lutaram ao lado de homens livres.`,
+    reflection:[
+      "Que instituição ou relação de poder pesou mais sobre a sua trajetória: a Guarda Nacional, o comitê de donativos, ou a relação com seu senhor/família?",
+      "Como a guerra evidencia diferenças entre regiões do Brasil (fronteira sul x centros urbanos) na forma de participar do esforço de guerra?",
+      "Que permanências você identifica entre o modo como o Estado exigia sacrifícios da população pobre na guerra e situações semelhantes no Brasil de hoje?"
+    ]}
+};
+
+const ORDER = ["start","2","3","4","5","6","7","8"]; // 8 steps total, used for progress calc
+
+let state = { node: "start", selected: null, showConsequence: false, path: "" };
+
+function stepIndex(node){
+  if(node === "start") return 0;
+  const n = parseInt(node.split("-")[0],10);
+  return n - 1;
+}
+
+function render(){
+  const d = DATA[state.node];
+  const card = document.getElementById("card");
+  const pct = Math.round((stepIndex(state.node)/7)*100);
+  document.getElementById("progressFill").style.width = pct+"%";
+
+  if(d.final){
+    card.innerHTML = `
+      <div class="step-title">${d.title}</div>
+      <div class="narrative">${d.narrative}</div>
+      <form id="reflectForm">
+        ${d.reflection.map((q,i)=>`<label class="reflection">${i+1}. ${q}</label><textarea rows="3" data-i="${i}"></textarea>`).join("")}
+      </form>
+      <div class="actions"><button class="next" id="finishBtn">Concluir jogo</button></div>
+    `;
+    document.getElementById("finishBtn").onclick = ()=>{
+      card.innerHTML = `
+        <div class="done">
+          <div class="check">✓</div>
+          <h2>Sua resposta foi registrada.</h2>
+          <p>Obrigado por jogar até o fim da trajetória de ${state.path}.</p>
+          <button class="restart" id="restartBtn">Jogar novamente</button>
+        </div>`;
+      document.getElementById("restartBtn").onclick = ()=>{
+        state = { node:"start", selected:null, showConsequence:false, path:"" };
+        render();
+      };
+    };
+    return;
+  }
+
+  const tagsHtml = d.tags && d.tags.length ? `<div class="tags">${d.tags.map(t=>`<span class="tag">[${t}]</span>`).join("")}</div>` : "";
+
+  if(state.showConsequence){
+    const opt = d.options[state.selected];
+    card.innerHTML = `
+      ${tagsHtml}
+      <div class="step-title">${d.title}</div>
+      <div class="question">${opt.text}</div>
+      <div class="consequence"><b>Consequência:</b> ${opt.consequence}</div>
+      <div class="actions"><button class="next" id="nextBtn">Continuar</button></div>
+    `;
+    document.getElementById("nextBtn").onclick = ()=>{
+      const nextNode = opt.next;
+      state = { node: nextNode, selected:null, showConsequence:false, path: state.path };
+      render();
+    };
+    return;
+  }
+
+  card.innerHTML = `
+    ${tagsHtml}
+    <div class="step-title">${d.title || ""}</div>
+    <div class="narrative">${d.narrative}</div>
+    <div class="question">${d.question}</div>
+    <div id="options">
+      ${d.options.map((o,i)=>`<div class="option" data-i="${i}"><div class="dot"></div><div>${o.text}</div></div>`).join("")}
+    </div>
+    <div class="actions"><button class="next" id="chooseBtn" disabled>${d.routeOnly ? "Começar" : "Escolher"}</button></div>
+  `;
+
+  document.querySelectorAll(".option").forEach(el=>{
+    el.onclick = ()=>{
+      document.querySelectorAll(".option").forEach(o=>o.classList.remove("selected"));
+      el.classList.add("selected");
+      state.selected = parseInt(el.dataset.i,10);
+      document.getElementById("chooseBtn").disabled = false;
+    };
+  });
+
+  document.getElementById("chooseBtn").onclick = ()=>{
+    if(state.selected === null) return;
+    const opt = d.options[state.selected];
+    if(d.routeOnly){
+      state.path = opt.text;
+      state = { node: opt.next, selected:null, showConsequence:false, path: opt.text };
+      render();
+    } else {
+      state.showConsequence = true;
+      render();
+    }
+  };
+}
+
+render();
+</script>
+</body>
+</html>
